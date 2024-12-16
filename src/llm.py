@@ -11,6 +11,7 @@ from langchain_community.utilities import StackExchangeAPIWrapper
 from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.tools.yahoo_finance_news import YahooFinanceNewsTool
+from langchain_community.tools import DuckDuckGoSearchResults
 
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import MongoDBChatMessageHistory
@@ -57,14 +58,6 @@ class LLM(object):
         # https://langchain-ai.github.io/langgraph/how-tos/create-react-agent/#usage
         tool_list = []
 
-        # tools
-        # Attempt to load ddg-search tool
-        try:
-            tools = load_tools(["ddg-search", ])
-            tool_list.extend(tools)
-        except Exception as e:
-            logger.warning("DuckDuckGo search tool not available: %s", e)
-
         # https://python.langchain.com/api_reference/community/agent_toolkits/langchain_community.agent_toolkits.openapi.toolkit.RequestsToolkit.html
         toolkit = RequestsToolkit(
             requests_wrapper=TextRequestsWrapper(headers={}),
@@ -74,6 +67,7 @@ class LLM(object):
         tool_list.extend(toolkit.get_tools())
 
         tool_list.extend([
+            DuckDuckGoSearchResults(), # https://python.langchain.com/docs/integrations/tools/ddg/
             YouTubeSearchTool(), # https://python.langchain.com/docs/integrations/tools/youtube/
             YouTubeCaptionTool(), 
             OpenWeatherMapAPIWrapper(), # https://python.langchain.com/docs/integrations/tools/openweathermap/
