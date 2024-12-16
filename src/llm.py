@@ -17,25 +17,7 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 class LLM(object):
-    def __init__(self, user_id: str, memory_window=8):
-        self.user_id = user_id
-        
-        # Create a MongoDB-backed chat message history for this user/session.
-        self.mongodb_history = MongoDBChatMessageHistory(
-            session_id=ObjectId(),
-            connection_string=Config.mongo_uri,
-            database_name="walle",
-            collection_name="chats",
-        )
-
-        # Wrap the message history in a conversation buffer memory.
-        # return_messages=True ensures memory returns a list of Message objects instead of strings.
-        self.memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            chat_memory=self.mongodb_history,
-            return_messages=True
-        )
-
+    def __init__(self, memory_window=8):
         self.llm = ChatOpenAI(
             openai_api_base=Config.openai_api_base, 
             openai_api_key=Config.openai_api_key,
@@ -43,9 +25,25 @@ class LLM(object):
             temperature=0.7, 
             model=Config.openai_model,
         )
-
         self.chain = self._create_langchain()
 
+    def _remember(self, session_id):
+        # Create a MongoDB-backed chat message history for this user/session.
+        mongodb_history = MongoDBChatMessageHistory(
+            session_id=session_id,
+            connection_string=Config.mongo_uri,
+            database_name="walle",
+            collection_name="chats",
+        )
+
+        # Wrap the message history in a conversation buffer memory.
+        # return_messages=True ensures memory returns a list of Message objects instead of strings.
+        return ConversationBufferMemory(
+            memory_key="chat_history",
+            chat_memory=mongodb_history,
+            return_messages=True
+        )
+    
     def _create_langchain(self):
         # https://langchain-ai.github.io/langgraph/how-tos/create-react-agent/#usage
         tool_list = []
@@ -80,12 +78,12 @@ class LLM(object):
         # https://github.com/langchain-ai/langchain/discussions/26337#discussioncomment-10618489
         return RunnableWithMessageHistory(
             agent_executor,
-            lambda session_id: self.memory,
+            lambda session_id: self._remember(session_id),
             input_messages_key="input",
             history_messages_key="agent_scratchpad",
         )
 
-    def ask(self, prompt_str: str):
-        response = self.chain.invoke({"input": prompt_str})
+    def ask(self, prompt_str: str, session_id='test'):
+        response = self.chain.invoke({"input": prompt_str}, {"session_id": session_id})
         # The structured chat agent returns {"output": "..."} for the final answer.
         return response.get('output', response.get('text', ''))

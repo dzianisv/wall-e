@@ -5,7 +5,7 @@ from llm import LLM
 
 @pytest.fixture
 def llm_instance():
-    return LLM(user_id="test_user")
+    return LLM()
 
 def test_ask_weather(llm_instance):
     response = llm_instance.ask("What is the weather like?")
