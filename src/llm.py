@@ -52,7 +52,7 @@ def https_proxy(proxy_url):
         if original_proxy is not None:
             os.environ['HTTPS_PROXY'] = original_proxy
         else:
-            os.environ.pop('HTTPS_PROXY', None)
+            del os.environ['HTTPS_PROXY']
 
 class LLM(object):
     def __init__(self, memory_window=8):
