@@ -1,4 +1,5 @@
 import logging
+import os
 from langchain_openai import ChatOpenAI
 from langchain_community.tools import YouTubeSearchTool
 from youtube_captions_tool import YouTubeCaptionTool
@@ -16,7 +17,7 @@ from langchain_community.chat_message_histories import MongoDBChatMessageHistory
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage
-
+from contextlib import contextmanager
 import openai
 
 import threading
@@ -26,15 +27,16 @@ from config import Config
 
 logger = logging.getLogger(__name__)
 
+
+@contextmanager
+def https_proxy(new_proxy):
+    old_proxy = os.environ.get('HTTPS_PROXY')
+    os.environ.set('HTTPS_PROXY', new_proxy)
+    yield
+    os.environ.set('HTTPS_PROXY', old_proxy)
+
 class LLM(object):
     def __init__(self, memory_window=8):
-        self.llm = ChatOpenAI(
-            openai_api_base=Config.openai_api_base, 
-            openai_api_key=Config.openai_api_key,
-            openai_proxy=Config.openai_proxy,
-            temperature=0.7, 
-            model=Config.openai_model,
-        )
         self.chain = self._create_langchain()
 
     def _remember(self, session_id):
@@ -78,7 +80,17 @@ class LLM(object):
         ])
 
         memory = MemorySaver()
-        return create_react_agent(self.llm, tools, state_modifier="You are helpful assistant", checkpointer=memory)
+
+        with https_proxy(Config.openai_proxy):
+            llm = ChatOpenAI(
+                openai_api_base=Config.openai_api_base, 
+                openai_api_key=Config.openai_api_key,
+                openai_proxy=Config.openai_proxy,
+                temperature=0.7, 
+                model=Config.openai_model,
+            )
+
+        return create_react_agent(llm, tools, state_modifier="You are helpful assistant", checkpointer=memory)
         # agent_executor = AgentExecutor.from_agent_and_tools(
         #     agent=agent,
         #     tools=tools,

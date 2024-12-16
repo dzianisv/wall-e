@@ -1,12 +1,11 @@
 from langchain.tools import BaseTool
 from youtube_transcript_api import YouTubeTranscriptApi
 import re
-
+import json
 
 def _transcript(video_id):
-    transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
-    full_text = " ".join([x['text'] for x in transcript])
-    return full_text
+    return YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+    
 
 class YouTubeCaptionTool(BaseTool):
     name: str = "youtube_captions"
@@ -21,7 +20,7 @@ class YouTubeCaptionTool(BaseTool):
         video_id = match.group(1)
 
         try:
-            _get_t
+            return json.dumps(_transcript)
         except Exception as e:
             return f"Failed to get captions: {e}"
 
