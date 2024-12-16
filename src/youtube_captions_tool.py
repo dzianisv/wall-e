@@ -2,22 +2,26 @@ from langchain.tools import BaseTool
 from youtube_transcript_api import YouTubeTranscriptApi
 import re
 
+
+def _transcript(video_id):
+    transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+    full_text = " ".join([x['text'] for x in transcript])
+    return full_text
+
 class YouTubeCaptionTool(BaseTool):
     name: str = "youtube_captions"
     description: str = "Fetch the captions of a given YouTube video URL to use as context."
 
     def _run(self, url: str) -> str:
         # Extract video_id from URL
-        # Typical formats: https://www.youtube.com/watch?v=VIDEO_ID or similar
-        match = re.search(r"v=([^&]+)", url)
+        # Typical formats: https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID
+        match = re.search(r"(?:v/|be/|v=|\/)([^&?]+)", url)
         if not match:
             return "No valid video_id found in URL."
         video_id = match.group(1)
 
         try:
-            transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
-            full_text = " ".join([x['text'] for x in transcript])
-            return full_text
+            _get_t
         except Exception as e:
             return f"Failed to get captions: {e}"
 
