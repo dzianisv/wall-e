@@ -28,12 +28,31 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 
+
 @contextmanager
-def https_proxy(new_proxy):
-    old_proxy = os.environ.get('HTTPS_PROXY')
-    os.environ.set('HTTPS_PROXY', new_proxy)
-    yield
-    os.environ.set('HTTPS_PROXY', old_proxy)
+def https_proxy(proxy_url):
+    """
+    Context manager to temporarily set the HTTPS_PROXY environment variable.
+    
+    Args:
+        proxy_url (str): The proxy URL to set for the HTTPS_PROXY variable.
+        
+    Yields:
+        str: The proxy URL that was set.
+    """
+    # Save the current value of HTTPS_PROXY
+    original_proxy = os.environ.get('HTTPS_PROXY')
+    
+    try:
+        # Set the new HTTPS_PROXY value
+        os.environ['HTTPS_PROXY'] = proxy_url
+        yield proxy_url  # Yield the new value to the context
+    finally:
+        # Restore the original value (or delete if it was unset)
+        if original_proxy is not None:
+            os.environ['HTTPS_PROXY'] = original_proxy
+        else:
+            os.environ.pop('HTTPS_PROXY', None)
 
 class LLM(object):
     def __init__(self, memory_window=8):

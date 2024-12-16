@@ -20,9 +20,9 @@ class YouTubeCaptionTool(BaseTool):
         video_id = match.group(1)
 
         try:
-            return json.dumps(_transcript)
+            return json.dumps(_transcript(video_id))
         except Exception as e:
-            return f"Failed to get captions: {e}"
+            return f"Failed to get captions of {video_id}: {e}"
 
     async def _arun(self, url: str) -> str:
         # Async version if needed
