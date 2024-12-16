@@ -3,13 +3,14 @@ from langchain_openai import ChatOpenAI
 from langchain.agents import create_structured_chat_agent, AgentExecutor, load_tools
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.tools import YouTubeSearchTool
-from langchain.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, ChatPromptTemplate
-from langchain import hub
 from youtube_captions_tool import YouTubeCaptionTool
-from bson.objectid import ObjectId
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import MongoDBChatMessageHistory
 from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.messages import HumanMessage
+
+import threading
 
 
 from config import Config
@@ -35,7 +36,7 @@ class LLM(object):
             database_name="walle",
             collection_name="chats",
         )
-
+        # return mongodb_history
         # Wrap the message history in a conversation buffer memory.
         # return_messages=True ensures memory returns a list of Message objects instead of strings.
         return ConversationBufferMemory(
@@ -66,24 +67,28 @@ class LLM(object):
             "You may not need to use tools for every query - the user may just want to chat!"
         )
 
-        agent = create_react_agent(self.llm, tools, state_modifier=system)
-        agent_executor = AgentExecutor.from_agent_and_tools(
-            agent=agent,
-            tools=tools,
-            verbose=False,
-            handle_parsing_errors=True,
-            max_iterations=4000,
-            max_execution_time=60000
-        )
-        # https://github.com/langchain-ai/langchain/discussions/26337#discussioncomment-10618489
-        return RunnableWithMessageHistory(
-            agent_executor,
-            lambda session_id: self._remember(session_id),
-            input_messages_key="input",
-            history_messages_key="agent_scratchpad",
-        )
+        memory = MemorySaver()
+        return create_react_agent(self.llm, tools, state_modifier=system, checkpointer=memory)
+        # agent_executor = AgentExecutor.from_agent_and_tools(
+        #     agent=agent,
+        #     tools=tools,
+        #     verbose=False,
+        #     handle_parsing_errors=True,
+        #     max_iterations=4000,
+        #     max_execution_time=60000
+        # )
+        # # https://github.com/langchain-ai/langchain/discussions/26337#discussioncomment-10618489
+        # return RunnableWithMessageHistory(
+        #     agent_executor,
+        #     lambda session_id: self._remember(session_id),
+        #     input_messages_key="input",
+        #     history_messages_key="agent_scratchpad",
+        # )
 
     def ask(self, prompt_str: str, session_id='test'):
-        response = self.chain.invoke({"input": prompt_str}, {"session_id": session_id})
-        # The structured chat agent returns {"output": "..."} for the final answer.
-        return response.get('output', response.get('text', ''))
+        response = self.chain.invoke({"messages": [HumanMessage(content=prompt_str)]}, 
+                                     {"session_id": session_id, "thread_id": threading.get_ident()}
+                                     )
+
+        logger.info("Got an answer for %s: %s", session_id, response)
+        return response['messages'][-1].content
