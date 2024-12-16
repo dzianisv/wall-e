@@ -4,6 +4,14 @@ from langchain.agents import create_structured_chat_agent, AgentExecutor, load_t
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.tools import YouTubeSearchTool
 from youtube_captions_tool import YouTubeCaptionTool
+from langchain_community.utilities import OpenWeatherMapAPIWrapper
+from langchain_community.agent_toolkits.openapi.toolkit import RequestsToolkit
+from langchain_community.utilities.requests import TextRequestsWrapper
+from langchain_community.utilities import StackExchangeAPIWrapper
+from langchain_community.tools import WikipediaQueryRun
+from langchain_community.utilities import WikipediaAPIWrapper
+from langchain_community.tools.yahoo_finance_news import YahooFinanceNewsTool
+
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import MongoDBChatMessageHistory
 from langgraph.prebuilt import create_react_agent
@@ -49,26 +57,33 @@ class LLM(object):
         # https://langchain-ai.github.io/langgraph/how-tos/create-react-agent/#usage
         tool_list = []
 
+        # tools
         # Attempt to load ddg-search tool
         try:
-            tools = load_tools(["ddg-search"])
+            tools = load_tools(["ddg-search", ])
             tool_list.extend(tools)
         except Exception as e:
             logger.warning("DuckDuckGo search tool not available: %s", e)
 
-        # Add YouTube search tool
-        tool_list.append(YouTubeSearchTool())
-        # Add YouTube captions tool
-        tool_list.append(YouTubeCaptionTool())
-
-        # Pull the structured chat agent prompt from hub
-        system = (
-            "You are a helpful assistant"
-            "You may not need to use tools for every query - the user may just want to chat!"
+        # https://python.langchain.com/api_reference/community/agent_toolkits/langchain_community.agent_toolkits.openapi.toolkit.RequestsToolkit.html
+        toolkit = RequestsToolkit(
+            requests_wrapper=TextRequestsWrapper(headers={}),
+            allow_dangerous_requests=RequestsToolkit.ALLOW_DANGEROUS_REQUEST
         )
 
+        tool_list.extend(toolkit.get_tools())
+
+        tool_list.extend([
+            YouTubeSearchTool(), # https://python.langchain.com/docs/integrations/tools/youtube/
+            YouTubeCaptionTool(), 
+            OpenWeatherMapAPIWrapper(), # https://python.langchain.com/docs/integrations/tools/openweathermap/
+            StackExchangeAPIWrapper(),
+            WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()), # https://python.langchain.com/docs/integrations/tools/wikipedia/
+            YahooFinanceNewsTool(), # https://python.langchain.com/docs/integrations/tools/yahoo_finance_news/
+        ])
+
         memory = MemorySaver()
-        return create_react_agent(self.llm, tools, state_modifier=system, checkpointer=memory)
+        return create_react_agent(self.llm, tools, state_modifier="You are helpful assistant", checkpointer=memory)
         # agent_executor = AgentExecutor.from_agent_and_tools(
         #     agent=agent,
         #     tools=tools,
