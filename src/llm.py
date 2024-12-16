@@ -6,9 +6,9 @@ from langchain_community.tools import YouTubeSearchTool
 from langchain.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, ChatPromptTemplate
 from langchain import hub
 from youtube_captions_tool import YouTubeCaptionTool
-from memory import MongoConversationMemory
-from store import MongoMemoryStore
 from config import Config
+from bson.objectid import ObjectId
+from langchain.mongodb import MongoDBChatMessageHistory
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,13 @@ logger = logging.getLogger(__name__)
 class LLM(object):
     def __init__(self, user_id: str, memory_window=8):
         self.user_id = user_id
-        self.store = MongoMemoryStore(mongo_uri=Config.mongo_uri)
-        self.memory = MongoConversationMemory(user_id=self.user_id, store=self.store)
+        
+        chat_message_history = MongoDBChatMessageHistory(
+            session_id=ObjectId(),
+            connection_string=Config.mongo_uri
+            database_name="walle",
+            collection_name="chats",
+        )
 
         self.llm = ChatOpenAI(
             openai_api_base=Config.openai_api_base, 

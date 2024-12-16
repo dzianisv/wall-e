@@ -3,8 +3,8 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import re
 
 class YouTubeCaptionTool(BaseTool):
-    name = "youtube_captions"
-    description = "Fetch the captions of a given YouTube video URL to use as context."
+    name: str = "youtube_captions"
+    description: str = "Fetch the captions of a given YouTube video URL to use as context."
 
     def _run(self, url: str) -> str:
         # Extract video_id from URL

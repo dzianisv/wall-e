@@ -5,15 +5,18 @@ name = "pypi"
 
 [packages]
 pymongo = "*"
-langchain = "*"
 python-telegram-bot = "*"
 youtube-transcript-api = "*"
 openai = "*"
 duckduckgo-search = "*"
 langchain-openai = "*"
 langchain-community = "*"
+pip = "*"
+install = "*"
 
 [dev-packages]
+pytest = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.13"
