@@ -149,4 +149,5 @@ class LLM(object):
                 retry_interval *= 2
                 continue
         else:
-            raise err from None
+            logger.exception(err)
+            return "😢"

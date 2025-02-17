@@ -4,12 +4,22 @@ import json
 import logging
 import os
 from urllib.parse import urlparse, parse_qs
+import spacy
 
 logger = logging.getLogger(__name__)
 
 def _transcript(video_id):
-    return YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+    captions = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+    return "\n".join([c['text'] for c in captions])
     
+
+def clean_text(text):
+    nlp = spacy.load("en_core_web_sm")
+    # Process the text
+    doc = nlp(text)
+    # Remove stop words and punctuation
+    cleaned_text = " ".join([token.text for token in doc if not token.is_stop and not token.is_punct])
+    return cleaned_text
 
 class YouTubeCaptionTool(BaseTool):
     name: str = "youtube_captions"
@@ -26,10 +36,12 @@ class YouTubeCaptionTool(BaseTool):
         else:
             video_id = parsed_url.path[1:]
 
-
         try:
             logger.info("HTTPS_PROXY=%s", os.environ.get("HTTPS_PROXY"))
-            return json.dumps(_transcript(video_id))
+            transcript = _transcript(video_id)
+            transcript = clean_text(transcript)
+            logger.info("Cleaned transcript: %s", transcript)
+            return transcript
         except Exception as e:
             logger.exception(e)
             return f"Failed to get captions of {video_id}: {e}"
