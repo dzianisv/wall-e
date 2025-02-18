@@ -24,7 +24,7 @@ WORKDIR /app
 COPY Pipfile Pipfile.lock /app/
 
 # Install Python dependencies
-RUN pipenv install --deploy --ignore-pipfile
+RUN pipenv install --deploy
 
 # Copy the rest of the application code
 COPY . /app
