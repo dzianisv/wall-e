@@ -11,15 +11,11 @@ openai = "*"
 duckduckgo-search = "*"
 langchain-openai = "*"
 langchain-community = "*"
-stackapi = "*"
 langgraph = "*"
 pyowm = "*"
-transformers = "*"
 spacy = "*"
 
 [dev-packages]
 pytest = "*"
 pylint = "*"
 
-[requires]
-python_version = "3.12"
