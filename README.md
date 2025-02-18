@@ -10,3 +10,10 @@ Decisions:
 pipenv install
 pipenv run python -m spacy download en_core_web_sm
 ```
+
+
+
+## github required env variables
+
+OPENAI_API_KEY
+TELEGRAM_BOT_TOKEN
