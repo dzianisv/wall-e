@@ -1,4 +1,4 @@
-job "walle" {
+job "wall-e" {
   group "group-1" {
     task "telegram-bot" {
       driver = "docker"
@@ -7,7 +7,7 @@ job "walle" {
       config {
         image      = "${IMAGE_TAG}"
         force_pull = true
-        ports      = ["http"]
+        ports      = []
       }
 
       env {
