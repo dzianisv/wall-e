@@ -14,8 +14,8 @@ langchain-community = "*"
 langgraph = "*"
 pyowm = "*"
 spacy = "*"
+wikipedia = "*"
 
 [dev-packages]
 pytest = "*"
 pylint = "*"
-
