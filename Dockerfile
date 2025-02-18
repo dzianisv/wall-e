@@ -21,7 +21,7 @@ RUN pip install --upgrade pip && \
 WORKDIR /app
 
 # Copy Pipfile and Pipfile.lock to the working directory
-COPY Pipfile Pipfile.lock /app/
+COPY Pipfile /app/
 
 # Install Python dependencies
 RUN pipenv install --deploy
