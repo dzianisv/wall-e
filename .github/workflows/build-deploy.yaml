@@ -6,6 +6,10 @@ on:
       - main
       - dev
 
+permissions:
+  packages: write
+  container: write
+
 jobs:
   build-and-deploy:
     # https://docs.github.com/en/actions/deployment/about-deployments/deploying-with-github-actions
