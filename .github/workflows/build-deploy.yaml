@@ -60,4 +60,4 @@ jobs:
         NOMAD_TLS_SERVER_NAME: 127.0.0.1
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        IMAGE_TAG: ghcr.io/${{ github.repository }}/poe-server:${{ github.sha }}
+        IMAGE_TAG: ghcr.io/${{ github.repository }}/Wall-E:${{ github.sha }}
