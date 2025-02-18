@@ -100,15 +100,15 @@ class LLM(object):
         ])
 
         memory = MemorySaver()
-
-        with https_proxy(Config.openai_proxy):
-            llm = ChatOpenAI(
-                openai_api_base=Config.openai_api_base, 
-                openai_api_key=Config.openai_api_key,
-                openai_proxy=Config.openai_proxy,
-                temperature=0.7, 
-                model=Config.openai_model,
-            )
+        # https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html
+        llm = ChatOpenAI(
+            openai_api_base=Config.openai_api_base, 
+            openai_api_key=Config.openai_api_key,
+            openai_proxy=Config.openai_proxy,
+            temperature=0.7, 
+            openai_proxy=Config.openai_proxy,
+            model=Config.openai_model,
+        )
 
         return create_react_agent(llm, tools, state_modifier="You are helpful assistant", checkpointer=memory)
         # agent_executor = AgentExecutor.from_agent_and_tools(
