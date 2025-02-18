@@ -8,7 +8,6 @@ on:
 
 permissions:
   packages: write
-  container: write
 
 jobs:
   build-and-deploy:
