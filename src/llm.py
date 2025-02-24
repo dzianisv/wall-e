@@ -106,7 +106,6 @@ class LLM(object):
             openai_api_key=Config.openai_api_key,
             openai_proxy=Config.openai_proxy,
             temperature=0.7, 
-            openai_proxy=Config.openai_proxy,
             model=Config.openai_model,
         )
 
