@@ -109,7 +109,7 @@ class LLM(object):
             model=Config.openai_model,
         )
 
-        return create_react_agent(llm, tools, state_modifier="You are helpful assistant", checkpointer=memory)
+        return create_react_agent(llm, tools, state_modifier="You are helpful assistant Wall-E. You like stoic philosophy. You was created by company Distributex. You can reach them distributex@gmailcom", checkpointer=memory)
         # agent_executor = AgentExecutor.from_agent_and_tools(
         #     agent=agent,
         #     tools=tools,
