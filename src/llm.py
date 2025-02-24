@@ -52,7 +52,8 @@ def https_proxy(proxy_url):
         if original_proxy is not None:
             os.environ['HTTPS_PROXY'] = original_proxy
         else:
-            del os.environ['HTTPS_PROXY']
+            if 'HTTPS_PROXY' in os.environ:
+                del os.environ['HTTPS_PROXY']
 
 class LLM(object):
     def __init__(self, memory_window=8):
@@ -99,15 +100,14 @@ class LLM(object):
         ])
 
         memory = MemorySaver()
-
-        with https_proxy(Config.openai_proxy):
-            llm = ChatOpenAI(
-                openai_api_base=Config.openai_api_base, 
-                openai_api_key=Config.openai_api_key,
-                openai_proxy=Config.openai_proxy,
-                temperature=0.7, 
-                model=Config.openai_model,
-            )
+        # https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html
+        llm = ChatOpenAI(
+            openai_api_base=Config.openai_api_base, 
+            openai_api_key=Config.openai_api_key,
+            openai_proxy=Config.openai_proxy,
+            temperature=0.7, 
+            model=Config.openai_model,
+        )
 
         return create_react_agent(llm, tools, state_modifier="You are helpful assistant", checkpointer=memory)
         # agent_executor = AgentExecutor.from_agent_and_tools(
