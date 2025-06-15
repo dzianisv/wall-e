@@ -12,11 +12,40 @@ from telegram.ext import (
 )
 from config import Config
 from llm import LLM
+from google_workspace import google_workspace
 
 import logging
 logger = logging.getLogger(__name__)
 
 llm = LLM()
+
+async def google_auth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_id = str(update.effective_user.id)
+    url = google_workspace.start_authorization(user_id)
+    await update.message.reply_text(
+        f"Authorize access by visiting this URL and providing the code with /google_auth_code <code>:\n{url}"
+    )
+
+
+async def google_auth_code(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not context.args:
+        await update.message.reply_text("Usage: /google_auth_code <code>")
+        return
+    user_id = str(update.effective_user.id)
+    code = context.args[0]
+    google_workspace.finish_authorization(user_id, code)
+    await update.message.reply_text("Authorization completed")
+
+
+async def keep_auth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if len(context.args) < 2:
+        await update.message.reply_text("Usage: /keep_auth <email> <token>")
+        return
+    user_id = str(update.effective_user.id)
+    email = context.args[0]
+    token = context.args[1]
+    google_workspace.set_keep_credentials(user_id, email, token)
+    await update.message.reply_text("Keep token saved")
 
 
 async def reply(message: Message, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -61,6 +90,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 def create_telegram_app(token: str) -> Application:
     application = Application.builder().token(token).build()
+    application.add_handler(CommandHandler("google_auth", google_auth))
+    application.add_handler(CommandHandler("google_auth_code", google_auth_code))
+    application.add_handler(CommandHandler("keep_auth", keep_auth))
     application.add_handler(MessageHandler(filters.ALL, message_handler))
     return application
 

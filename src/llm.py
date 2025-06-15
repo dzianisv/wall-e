@@ -11,6 +11,13 @@ from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.tools.yahoo_finance_news import YahooFinanceNewsTool
 from langchain_community.tools import DuckDuckGoSearchResults
+from google_workspace_tool import (
+    GoogleEmailsTool,
+    GoogleCalendarTool,
+    GoogleDriveTool,
+    GoogleKeepTool,
+    session_context,
+)
 
 from langchain.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import MongoDBChatMessageHistory
@@ -91,12 +98,16 @@ class LLM(object):
         tools.extend([
             DuckDuckGoSearchResults(), # https://python.langchain.com/docs/integrations/tools/ddg/
             YouTubeSearchTool(), # https://python.langchain.com/docs/integrations/tools/youtube/
-            YouTubeCaptionTool(), 
+            YouTubeCaptionTool(),
             # OpenWeatherMapAPIWrapper(), # https://python.langchain.com/docs/integrations/tools/openweathermap/
             # TODO: throws ValueError: The first argument must be a string or a callable with a __name__ for tool decorator. Got <class 'langchain_community.utilities.stackexchange.StackExchangeAPIWrapper'>
             # StackExchangeAPIWrapper(),  # https://python.langchain.com/api_reference/community/utilities/langchain_community.utilities.stackexchange.StackExchangeAPIWrapper.html#langchain_community.utilities.stackexchange.StackExchangeAPIWrapper
             WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()), # https://python.langchain.com/docs/integrations/tools/wikipedia/
             YahooFinanceNewsTool(), # https://python.langchain.com/docs/integrations/tools/yahoo_finance_news/
+            GoogleEmailsTool(),
+            GoogleCalendarTool(),
+            GoogleDriveTool(),
+            GoogleKeepTool(),
         ])
 
         memory = MemorySaver()
@@ -132,9 +143,10 @@ class LLM(object):
         err = None
         for _ in range(3):
             try:
+                session_context.session_id = session_id
                 response = self.chain.invoke({"messages": [
                                                     HumanMessage(content=prompt_str)
-                                            ]}, 
+                                            ]},
                                             {"session_id": session_id, "thread_id": threading.get_ident()}
                                             )
 
