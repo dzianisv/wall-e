@@ -1,7 +1,18 @@
 # test_llm.py
+import os
+import sys
 import pytest
 from unittest.mock import patch, MagicMock
-from llm import LLM
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+
+try:
+    from llm import LLM
+except ModuleNotFoundError:  # pragma: no cover
+    pytest.skip("langchain not installed", allow_module_level=True)
+
+if not os.environ.get("OPENAI_API_KEY"):
+    pytest.skip("OPENAI_API_KEY not set", allow_module_level=True)
 
 @pytest.fixture
 def llm_instance():

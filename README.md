@@ -11,6 +11,21 @@ pipenv install
 pipenv run python -m spacy download en_core_web_sm
 ```
 
+## MCP integrations
+
+The bot supports connecting external Model Context Protocol (MCP) servers.
+
+### Commands
+
+* `/mcp` – list connected MCP servers
+* `/mcp <url>` – connect a new MCP server
+* `/mcp delete <index>` – remove a server by index
+* `/integration gmail` – connect the Gmail MCP server
+* `/integration calendar` – connect the Google Calendar MCP server
+
+By default the Gmail server uses [GongRzhe/Gmail-MCP-Server](https://github.com/GongRzhe/Gmail-MCP-Server)
+and the Calendar server uses [taylorwilsdon/google_workspace_mcp](https://github.com/taylorwilsdon/google_workspace_mcp).
+
 
 
 ## github required env variables
